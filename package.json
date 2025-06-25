@@ -1,0 +1,41 @@
+{
+  "name": "@jackchuka/sdl-decompose",
+  "version": "1.0.1",
+  "description": "Decompose GraphQL SDL by operation name to produce partial SDL",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "build:cli": "esbuild src/cli.ts --bundle --platform=node --target=node16 --outfile=bin/cli.js --minify --banner:js='#!/usr/bin/env node' --keep-names",
+    "dev": "tsc --watch",
+    "test": "jest",
+    "prepublishOnly": "npm run build && npm run build:cli"
+  },
+  "keywords": [
+    "graphql",
+    "sdl",
+    "decompose",
+    "schema"
+  ],
+  "author": "jackchuka",
+  "license": "MIT",
+  "dependencies": {
+    "commander": "^14.0.0",
+    "graphql": "^16.8.1"
+  },
+  "devDependencies": {
+    "@types/jest": "^29.0.0",
+    "@types/node": "^20.19.1",
+    "esbuild": "^0.25.5",
+    "jest": "^29.0.0",
+    "ts-jest": "^29.4.0",
+    "typescript": "^5.0.0"
+  },
+  "bin": {
+    "sdl-decompose": "bin/cli.js"
+  },
+  "files": [
+    "dist/**/*",
+    "bin/**/*"
+  ]
+}
