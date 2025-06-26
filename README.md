@@ -54,6 +54,7 @@ Options:
   -t, --type <type>       Operation type: query, mutation, subscription (default: "query")
   --output <file>         Output file path (optional, prints to stdout if not provided)
   --include-builtins      Include builtin scalar types in output (default: false)
+  --exclude-comments         Remove comments and descriptions from output SDL (default: false)
   -h, --help              display help for command
 ```
 
@@ -115,7 +116,14 @@ type Post {
 npx @jackchuka/sdl-decompose --sdl schema.graphql --operation createUser --type mutation --output create-user.graphql
 ```
 
-#### Example 3: Using with Pipes
+#### Example 3: Remove Comments from Output
+
+```bash
+# Clean output without comments or descriptions
+npx @jackchuka/sdl-decompose --sdl schema.graphql --operation getUser --exclude-comments
+```
+
+#### Example 4: Using with Pipes
 
 ```bash
 # Download schema and decompose in one command
@@ -160,7 +168,8 @@ const fullSDL = `
 `;
 
 const result = decomposeGraphQL(fullSDL, 'getUser', 'query', {
-  includeBuiltinScalars: false
+  includeBuiltinScalars: false,
+  excludeComments: true
 });
 
 console.log(result.sdl);
@@ -180,6 +189,7 @@ console.log('Operation found:', result.operationFound);
 
 **Options:**
 - `includeBuiltinScalars` (boolean): Include built-in scalar types (String, Int, Float, Boolean, ID) in the output. Defaults to `false`
+- `excludeComments` (boolean): Remove comments and descriptions from the output SDL. Defaults to `false`
 
 **Returns:**
 ```typescript
@@ -195,6 +205,7 @@ interface DecomposeResult {
 ```typescript
 interface DecomposeOptions {
   includeBuiltinScalars?: boolean;
+  excludeComments?: boolean;
 }
 
 interface DecomposeResult {

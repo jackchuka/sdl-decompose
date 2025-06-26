@@ -53,6 +53,11 @@ program
     "Output file path (optional, prints to stdout if not provided)"
   )
   .option("--include-builtins", "Include builtin scalar types in output", false)
+  .option(
+    "--execlude-comments",
+    "Remove comments and descriptions from output SDL",
+    false
+  )
   .action(async (options) => {
     const {
       sdl: sdlFile,
@@ -60,6 +65,7 @@ program
       type: operationType,
       output: outputFile,
       includeBuiltins,
+      execludeComments,
     } = options;
 
     // Validate operation type
@@ -78,6 +84,7 @@ program
         operationType as OperationType,
         {
           includeBuiltinScalars: includeBuiltins,
+          excludeComments: execludeComments,
         }
       );
 
