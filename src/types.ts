@@ -2,6 +2,7 @@ import { GraphQLNamedType } from "graphql";
 
 export interface DecomposeOptions {
   includeBuiltinScalars?: boolean;
+  excludeComments?: boolean;
 }
 
 export interface DecomposeResult {
