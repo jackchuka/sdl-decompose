@@ -37,7 +37,7 @@ async function readSDL(sdlFile?: string): Promise<string> {
 program
   .name("sdl-decompose")
   .description("Decompose GraphQL SDL by operation name to produce partial SDL")
-  .version("1.0.0")
+  .version(require("../package.json").version)
   .option(
     "-s, --sdl <file>",
     "Path to SDL file (optional, reads from stdin if not provided)"
