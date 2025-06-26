@@ -12,6 +12,7 @@ A powerful tool to decompose GraphQL SDL (Schema Definition Language) by operati
 - 🔄 **All operation types**: Support for queries, mutations, and subscriptions
 - 📝 **TypeScript support**: Full TypeScript definitions included
 - 🛠️ **CLI and programmatic API**: Use from command line or integrate into your code
+- 🚫 **Deprecated field filtering**: Exclude deprecated fields by default
 - ⚡ **Fast and lightweight**: Minimal dependencies, built on top of `graphql-js`
 
 ## Installation
@@ -54,7 +55,8 @@ Options:
   -t, --type <type>       Operation type: query, mutation, subscription (default: "query")
   --output <file>         Output file path (optional, prints to stdout if not provided)
   --include-builtins      Include builtin scalar types in output (default: false)
-  --exclude-comments         Remove comments and descriptions from output SDL (default: false)
+  --exclude-comments      Remove comments and descriptions from output SDL (default: false)
+  --include-deprecated    Include deprecated fields in output (default: false)
   -h, --help              display help for command
 ```
 
@@ -123,7 +125,14 @@ npx @jackchuka/sdl-decompose --sdl schema.graphql --operation createUser --type 
 npx @jackchuka/sdl-decompose --sdl schema.graphql --operation getUser --exclude-comments
 ```
 
-#### Example 4: Using with Pipes
+#### Example 4: Include Deprecated Fields
+
+```bash
+# Include deprecated fields in output (excluded by default)
+npx @jackchuka/sdl-decompose --sdl schema.graphql --operation getUser --include-deprecated
+```
+
+#### Example 5: Using with Pipes
 
 ```bash
 # Download schema and decompose in one command
@@ -169,7 +178,8 @@ const fullSDL = `
 
 const result = decomposeGraphQL(fullSDL, 'getUser', 'query', {
   includeBuiltinScalars: false,
-  excludeComments: true
+  excludeComments: true,
+  includeDeprecated: false
 });
 
 console.log(result.sdl);
@@ -190,6 +200,7 @@ console.log('Operation found:', result.operationFound);
 **Options:**
 - `includeBuiltinScalars` (boolean): Include built-in scalar types (String, Int, Float, Boolean, ID) in the output. Defaults to `false`
 - `excludeComments` (boolean): Remove comments and descriptions from the output SDL. Defaults to `false`
+- `includeDeprecated` (boolean): Include deprecated fields in the output SDL. Defaults to `false`
 
 **Returns:**
 ```typescript
@@ -206,6 +217,7 @@ interface DecomposeResult {
 interface DecomposeOptions {
   includeBuiltinScalars?: boolean;
   excludeComments?: boolean;
+  includeDeprecated?: boolean;
 }
 
 interface DecomposeResult {

@@ -58,6 +58,7 @@ program
     "Remove comments and descriptions from output SDL",
     false
   )
+  .option("--include-deprecated", "Include deprecated fields in output", false)
   .action(async (options) => {
     const {
       sdl: sdlFile,
@@ -66,6 +67,7 @@ program
       output: outputFile,
       includeBuiltins,
       execludeComments,
+      includeDeprecated,
     } = options;
 
     // Validate operation type
@@ -85,6 +87,7 @@ program
         {
           includeBuiltinScalars: includeBuiltins,
           excludeComments: execludeComments,
+          includeDeprecated: includeDeprecated,
         }
       );
 

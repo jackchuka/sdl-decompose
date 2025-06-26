@@ -1,5 +1,7 @@
 import {
-  buildSchema,
+  buildASTSchema,
+  parse,
+  visit,
   GraphQLSchema,
   GraphQLNamedType,
   GraphQLField,
@@ -11,6 +13,10 @@ import {
   printType,
   GraphQLArgument,
   GraphQLObjectType,
+  DocumentNode,
+  DefinitionNode,
+  FieldDefinitionNode,
+  DirectiveNode,
 } from "graphql";
 
 import {
@@ -22,6 +28,112 @@ import {
 
 const BUILTIN_SCALARS = new Set(["String", "Int", "Float", "Boolean", "ID"]);
 
+function preprocessAST(
+  document: DocumentNode,
+  options: DecomposeOptions
+): DocumentNode {
+  const needsPreprocessing =
+    options.excludeComments || !options.includeDeprecated;
+
+  if (!needsPreprocessing) {
+    return document;
+  }
+
+  return visit(document, {
+    // Handle field definitions - remove deprecated fields and descriptions
+    FieldDefinition(node: FieldDefinitionNode) {
+      // Remove deprecated fields entirely
+      if (!options.includeDeprecated && node.directives) {
+        const hasDeprecated = node.directives.some(
+          (directive: DirectiveNode) => directive.name.value === "deprecated"
+        );
+        if (hasDeprecated) {
+          return null; // Remove the entire field
+        }
+      }
+
+      // Remove field descriptions if excludeComments is true
+      if (options.excludeComments && node.description) {
+        return {
+          ...node,
+          description: undefined,
+        };
+      }
+
+      return node;
+    },
+
+    // Remove deprecated directives from remaining fields
+    Directive(node: DirectiveNode) {
+      if (node.name.value === "deprecated" && !options.includeDeprecated) {
+        return null; // Remove the directive
+      }
+      return node;
+    },
+
+    // Remove type descriptions if excludeComments is true
+    ObjectTypeDefinition(node) {
+      if (options.excludeComments && node.description) {
+        return {
+          ...node,
+          description: undefined,
+        };
+      }
+      return node;
+    },
+
+    InputObjectTypeDefinition(node) {
+      if (options.excludeComments && node.description) {
+        return {
+          ...node,
+          description: undefined,
+        };
+      }
+      return node;
+    },
+
+    InterfaceTypeDefinition(node) {
+      if (options.excludeComments && node.description) {
+        return {
+          ...node,
+          description: undefined,
+        };
+      }
+      return node;
+    },
+
+    UnionTypeDefinition(node) {
+      if (options.excludeComments && node.description) {
+        return {
+          ...node,
+          description: undefined,
+        };
+      }
+      return node;
+    },
+
+    EnumTypeDefinition(node) {
+      if (options.excludeComments && node.description) {
+        return {
+          ...node,
+          description: undefined,
+        };
+      }
+      return node;
+    },
+
+    ScalarTypeDefinition(node) {
+      if (options.excludeComments && node.description) {
+        return {
+          ...node,
+          description: undefined,
+        };
+      }
+      return node;
+    },
+  }) as DocumentNode;
+}
+
 export function decomposeGraphQL(
   fullSDL: string,
   operationName: string,
@@ -29,7 +141,14 @@ export function decomposeGraphQL(
   options: DecomposeOptions = {}
 ): DecomposeResult {
   try {
-    const schema = buildSchema(fullSDL);
+    // Parse SDL to AST
+    const document = parse(fullSDL);
+
+    // Preprocess AST based on options
+    const preprocessedDocument = preprocessAST(document, options);
+
+    // Build schema from preprocessed AST
+    const schema = buildASTSchema(preprocessedDocument);
     const collector: TypeCollector = {
       collected: new Set(),
       typeNames: new Set(),
@@ -188,8 +307,7 @@ function reconstructSDL(
     typeDefs.push(printType(type));
   }
 
-  const sdl = typeDefs.join("\n\n");
-  return options.excludeComments ? excludeCommentsFromSDL(sdl) : sdl;
+  return typeDefs.join("\n\n");
 }
 
 function printFieldSignature(field: GraphQLField<any, any>): string {
@@ -200,32 +318,6 @@ function printFieldSignature(field: GraphQLField<any, any>): string {
           .join(", ")})`
       : "";
   return `${args}: ${field.type}`;
-}
-
-function excludeCommentsFromSDL(sdl: string): string {
-  return sdl
-    .split("\n")
-    .map((line) => {
-      const trimmedLine = line.trim();
-      if (trimmedLine.startsWith("#")) {
-        return "";
-      }
-      const hashIndex = line.indexOf("#");
-      if (hashIndex !== -1) {
-        const beforeHash = line.substring(0, hashIndex).trimEnd();
-        if (beforeHash) {
-          return beforeHash;
-        }
-        return "";
-      }
-      return line;
-    })
-    .filter((line) => line !== "")
-    .join("\n")
-    .replace(/"""[\s\S]*?"""/g, "")
-    .replace(/^\s*$/gm, "")
-    .replace(/\n{2,}/g, "\n\n")
-    .trim();
 }
 
 export * from "./types";
