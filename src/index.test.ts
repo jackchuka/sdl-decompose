@@ -149,4 +149,90 @@ describe("decomposeGraphQL", () => {
       expect(result.collectedTypes.has("ID")).toBe(true);
     });
   });
+
+  describe("includeDeprecated option", () => {
+    const testSDLWithDeprecated = `
+      type Query {
+        getUser(id: ID!): User
+        getPost(id: ID!): Post
+      }
+
+      type User {
+        id: ID!
+        name: String!
+        email: String! @deprecated(reason: "Use contactInfo instead")
+        contactInfo: String!
+        oldField: String @deprecated
+        posts: [Post!]!
+      }
+
+      type Post {
+        id: ID!
+        title: String!
+        content: String!
+        author: User!
+        legacyField: Int @deprecated(reason: "No longer supported")
+      }
+    `;
+
+    it("should exclude deprecated fields by default", () => {
+      const result = decomposeGraphQL(testSDLWithDeprecated, "getUser", "query");
+
+      expect(result.operationFound).toBe(true);
+      expect(result.sdl).not.toContain("@deprecated");
+      expect(result.sdl).not.toContain("email:");
+      expect(result.sdl).not.toContain("oldField:");
+      expect(result.sdl).not.toContain("legacyField:");
+      expect(result.sdl).toContain("contactInfo:");
+      expect(result.sdl).toContain("name:");
+      expect(result.sdl).toContain("title:");
+    });
+
+    it("should include deprecated fields when includeDeprecated is true", () => {
+      const result = decomposeGraphQL(testSDLWithDeprecated, "getUser", "query", {
+        includeDeprecated: true,
+      });
+
+      expect(result.operationFound).toBe(true);
+      expect(result.sdl).toContain("@deprecated");
+      expect(result.sdl).toContain("email:");
+      expect(result.sdl).toContain("oldField:");
+      expect(result.sdl).toContain("legacyField:");
+      expect(result.sdl).toContain("@deprecated");
+    });
+
+    it("should work with other options together", () => {
+      const result = decomposeGraphQL(testSDLWithDeprecated, "getUser", "query", {
+        includeDeprecated: false,
+        includeBuiltinScalars: true,
+        excludeComments: true,
+      });
+
+      expect(result.operationFound).toBe(true);
+      expect(result.sdl).not.toContain("@deprecated");
+      expect(result.sdl).not.toContain("email:");
+      expect(result.collectedTypes.has("String")).toBe(true);
+      expect(result.collectedTypes.has("ID")).toBe(true);
+    });
+
+    it("should handle types with only deprecated fields", () => {
+      const sdlWithOnlyDeprecated = `
+        type Query {
+          getDeprecatedType: DeprecatedType
+        }
+
+        type DeprecatedType {
+          field1: String @deprecated
+          field2: Int @deprecated(reason: "Old field")
+        }
+      `;
+
+      const result = decomposeGraphQL(sdlWithOnlyDeprecated, "getDeprecatedType", "query");
+
+      expect(result.operationFound).toBe(true);
+      expect(result.sdl).toContain("type DeprecatedType");
+      expect(result.sdl).not.toContain("field1:");
+      expect(result.sdl).not.toContain("field2:");
+    });
+  });
 });
