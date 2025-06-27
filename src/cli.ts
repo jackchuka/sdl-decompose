@@ -54,7 +54,7 @@ program
   )
   .option("--include-builtins", "Include builtin scalar types in output", false)
   .option(
-    "--execlude-comments",
+    "--exclude-comments",
     "Remove comments and descriptions from output SDL",
     false
   )
@@ -66,7 +66,7 @@ program
       type: operationType,
       output: outputFile,
       includeBuiltins,
-      execludeComments,
+      excludeComments,
       includeDeprecated,
     } = options;
 
@@ -86,7 +86,7 @@ program
         operationType as OperationType,
         {
           includeBuiltinScalars: includeBuiltins,
-          excludeComments: execludeComments,
+          excludeComments: excludeComments,
           includeDeprecated: includeDeprecated,
         }
       );
