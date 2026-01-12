@@ -14,26 +14,16 @@ import {
   GraphQLArgument,
   GraphQLObjectType,
   DocumentNode,
-  DefinitionNode,
   FieldDefinitionNode,
   DirectiveNode,
 } from "graphql";
 
-import {
-  DecomposeOptions,
-  DecomposeResult,
-  OperationType,
-  TypeCollector,
-} from "./types";
+import { DecomposeOptions, DecomposeResult, OperationType, TypeCollector } from "./types";
 
 const BUILTIN_SCALARS = new Set(["String", "Int", "Float", "Boolean", "ID"]);
 
-function preprocessAST(
-  document: DocumentNode,
-  options: DecomposeOptions
-): DocumentNode {
-  const needsPreprocessing =
-    options.excludeComments || !options.includeDeprecated;
+function preprocessAST(document: DocumentNode, options: DecomposeOptions): DocumentNode {
+  const needsPreprocessing = options.excludeComments || !options.includeDeprecated;
 
   if (!needsPreprocessing) {
     return document;
@@ -45,7 +35,7 @@ function preprocessAST(
       // Remove deprecated fields entirely
       if (!options.includeDeprecated && node.directives) {
         const hasDeprecated = node.directives.some(
-          (directive: DirectiveNode) => directive.name.value === "deprecated"
+          (directive: DirectiveNode) => directive.name.value === "deprecated",
         );
         if (hasDeprecated) {
           return null; // Remove the entire field
@@ -138,7 +128,7 @@ export function decomposeGraphQL(
   fullSDL: string,
   operationName: string,
   operationType: OperationType = "query",
-  options: DecomposeOptions = {}
+  options: DecomposeOptions = {},
 ): DecomposeResult {
   try {
     // Parse SDL to AST
@@ -174,13 +164,7 @@ export function decomposeGraphQL(
 
     collectTypesFromField(field, collector, options);
 
-    const partialSDL = reconstructSDL(
-      schema,
-      collector,
-      operationType,
-      operationName,
-      options
-    );
+    const partialSDL = reconstructSDL(schema, collector, operationType, operationName);
 
     return {
       sdl: partialSDL,
@@ -189,9 +173,7 @@ export function decomposeGraphQL(
     };
   } catch (error) {
     throw new Error(
-      `Failed to decompose GraphQL: ${
-        error instanceof Error ? error.message : String(error)
-      }`
+      `Failed to decompose GraphQL: ${error instanceof Error ? error.message : String(error)}`,
     );
   }
 }
@@ -212,7 +194,7 @@ function getRootType(schema: GraphQLSchema, operationType: OperationType) {
 function collectTypesFromField(
   field: GraphQLField<any, any>,
   collector: TypeCollector,
-  options: DecomposeOptions
+  options: DecomposeOptions,
 ) {
   const fieldType = getNamedType(field.type);
   collectTypes(fieldType, collector, options);
@@ -228,7 +210,7 @@ function collectTypesFromField(
 function collectTypes(
   type: GraphQLNamedType | null | undefined,
   collector: TypeCollector,
-  options: DecomposeOptions
+  options: DecomposeOptions,
 ) {
   if (!type || collector.collected.has(type)) return;
 
@@ -275,7 +257,6 @@ function reconstructSDL(
   collector: TypeCollector,
   operationType: OperationType,
   operationName: string,
-  options: DecomposeOptions
 ): string {
   const typeDefs: string[] = [];
 
@@ -287,8 +268,8 @@ function reconstructSDL(
         operationType === "query"
           ? "Query"
           : operationType === "mutation"
-          ? "Mutation"
-          : "Subscription";
+            ? "Mutation"
+            : "Subscription";
 
       typeDefs.push(`type ${rootTypeName} {
   ${operationName}${printFieldSignature(field)}
@@ -297,11 +278,7 @@ function reconstructSDL(
   }
 
   for (const type of collector.collected) {
-    if (
-      type.name === "Query" ||
-      type.name === "Mutation" ||
-      type.name === "Subscription"
-    ) {
+    if (type.name === "Query" || type.name === "Mutation" || type.name === "Subscription") {
       continue;
     }
     typeDefs.push(printType(type));
@@ -314,10 +291,10 @@ function printFieldSignature(field: GraphQLField<any, any>): string {
   const args =
     field.args && field.args.length > 0
       ? `(${field.args
-          .map((arg: GraphQLArgument) => `${arg.name}: ${arg.type}`)
+          .map((arg: GraphQLArgument) => `${arg.name}: ${String(arg.type)}`)
           .join(", ")})`
       : "";
-  return `${args}: ${field.type}`;
+  return `${args}: ${String(field.type)}`;
 }
 
 export * from "./types";

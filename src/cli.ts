@@ -18,6 +18,10 @@ async function readSDL(sdlFile?: string): Promise<string> {
   const chunks: Buffer[] = [];
   return new Promise((resolve, reject) => {
     process.stdin.on("data", (chunk) => {
+      if (typeof chunk === "string") {
+        chunks.push(Buffer.from(chunk, "utf8"));
+        return;
+      }
       chunks.push(chunk);
     });
 
@@ -38,26 +42,12 @@ program
   .name("sdl-decompose")
   .description("Decompose GraphQL SDL by operation name to produce partial SDL")
   .version(require("../package.json").version)
-  .option(
-    "-s, --sdl <file>",
-    "Path to SDL file (optional, reads from stdin if not provided)"
-  )
+  .option("-s, --sdl <file>", "Path to SDL file (optional, reads from stdin if not provided)")
   .requiredOption("-o, --operation <name>", "Operation name to decompose")
-  .option(
-    "-t, --type <type>",
-    "Operation type: query, mutation, subscription",
-    "query"
-  )
-  .option(
-    "--output <file>",
-    "Output file path (optional, prints to stdout if not provided)"
-  )
+  .option("-t, --type <type>", "Operation type: query, mutation, subscription", "query")
+  .option("--output <file>", "Output file path (optional, prints to stdout if not provided)")
   .option("--include-builtins", "Include builtin scalar types in output", false)
-  .option(
-    "--exclude-comments",
-    "Remove comments and descriptions from output SDL",
-    false
-  )
+  .option("--exclude-comments", "Remove comments and descriptions from output SDL", false)
   .option("--include-deprecated", "Include deprecated fields in output", false)
   .action(async (options) => {
     const {
@@ -72,45 +62,32 @@ program
 
     // Validate operation type
     if (!["query", "mutation", "subscription"].includes(operationType)) {
-      console.error(
-        "Error: --type must be one of: query, mutation, subscription"
-      );
+      console.error("Error: --type must be one of: query, mutation, subscription");
       process.exit(1);
     }
 
     try {
       const fullSDL = await readSDL(sdlFile);
-      const result = decomposeGraphQL(
-        fullSDL,
-        operationName,
-        operationType as OperationType,
-        {
-          includeBuiltinScalars: includeBuiltins,
-          excludeComments: excludeComments,
-          includeDeprecated: includeDeprecated,
-        }
-      );
+      const result = decomposeGraphQL(fullSDL, operationName, operationType as OperationType, {
+        includeBuiltinScalars: includeBuiltins,
+        excludeComments: excludeComments,
+        includeDeprecated: includeDeprecated,
+      });
 
       if (!result.operationFound) {
-        console.error(
-          `Error: Operation '${operationName}' not found in ${operationType} type`
-        );
+        console.error(`Error: Operation '${operationName}' not found in ${operationType} type`);
         process.exit(1);
       }
 
       if (outputFile) {
         writeFileSync(outputFile, result.sdl);
         console.log(`Decomposed SDL written to: ${outputFile}`);
-        console.log(
-          `Collected types: ${Array.from(result.collectedTypes).join(", ")}`
-        );
+        console.log(`Collected types: ${Array.from(result.collectedTypes).join(", ")}`);
       } else {
         console.log(result.sdl);
       }
     } catch (error) {
-      console.error(
-        `Error: ${error instanceof Error ? error.message : String(error)}`
-      );
+      console.error(`Error: ${error instanceof Error ? error.message : String(error)}`);
       process.exit(1);
     }
   });

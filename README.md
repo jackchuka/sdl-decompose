@@ -65,6 +65,7 @@ Options:
 #### Example 1: Basic Query Decomposition
 
 Given this schema:
+
 ```graphql
 type Query {
   getUser(id: ID!): User
@@ -87,11 +88,13 @@ type Post {
 ```
 
 Running:
+
 ```bash
 npx @jackchuka/sdl-decompose --sdl schema.graphql --operation getUser
 ```
 
 Outputs:
+
 ```graphql
 type Query {
   getUser(id: ID!): User
@@ -155,7 +158,7 @@ npm install @jackchuka/sdl-decompose
 ### Usage
 
 ```typescript
-import { decomposeGraphQL } from '@jackchuka/sdl-decompose';
+import { decomposeGraphQL } from "@jackchuka/sdl-decompose";
 
 const fullSDL = `
   type Query {
@@ -176,15 +179,15 @@ const fullSDL = `
   }
 `;
 
-const result = decomposeGraphQL(fullSDL, 'getUser', 'query', {
+const result = decomposeGraphQL(fullSDL, "getUser", "query", {
   includeBuiltinScalars: false,
   excludeComments: true,
-  includeDeprecated: false
+  includeDeprecated: false,
 });
 
 console.log(result.sdl);
-console.log('Collected types:', Array.from(result.collectedTypes));
-console.log('Operation found:', result.operationFound);
+console.log("Collected types:", Array.from(result.collectedTypes));
+console.log("Operation found:", result.operationFound);
 ```
 
 ### API Reference
@@ -192,22 +195,25 @@ console.log('Operation found:', result.operationFound);
 #### `decomposeGraphQL(fullSDL, operationName, operationType?, options?)`
 
 **Parameters:**
+
 - `fullSDL` (string): The complete GraphQL SDL
 - `operationName` (string): Name of the operation to decompose
 - `operationType` (string, optional): Type of operation - `'query'`, `'mutation'`, or `'subscription'`. Defaults to `'query'`
 - `options` (object, optional): Configuration options
 
 **Options:**
+
 - `includeBuiltinScalars` (boolean): Include built-in scalar types (String, Int, Float, Boolean, ID) in the output. Defaults to `false`
 - `excludeComments` (boolean): Remove comments and descriptions from the output SDL. Defaults to `false`
 - `includeDeprecated` (boolean): Include deprecated fields in the output SDL. Defaults to `false`
 
 **Returns:**
+
 ```typescript
 interface DecomposeResult {
-  sdl: string;                    // The decomposed SDL
-  collectedTypes: Set<string>;    // Set of type names that were collected
-  operationFound: boolean;        // Whether the operation was found
+  sdl: string; // The decomposed SDL
+  collectedTypes: Set<string>; // Set of type names that were collected
+  operationFound: boolean; // Whether the operation was found
 }
 ```
 
@@ -226,7 +232,7 @@ interface DecomposeResult {
   operationFound: boolean;
 }
 
-type OperationType = 'query' | 'mutation' | 'subscription';
+type OperationType = "query" | "mutation" | "subscription";
 ```
 
 ## Use Cases
