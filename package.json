@@ -45,7 +45,7 @@
     "jest": "^30.2.0",
     "oxfmt": "^0.28.0",
     "oxlint": "^1.39.0",
-    "oxlint-tsgolint": "^0.11.0",
+    "oxlint-tsgolint": "^0.13.0",
     "ts-jest": "^29.4.6",
     "typescript": "^5.9.3"
   },
