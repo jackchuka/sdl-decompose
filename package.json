@@ -22,19 +22,19 @@
     "dist/**/*"
   ],
   "type": "module",
-  "engines": {
-    "node": ">=22.13.0"
-  },
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
     "lint": "oxlint --type-aware --tsconfig ./tsconfig.json",
     "lint:fix": "oxlint --fix --type-aware --tsconfig ./tsconfig.json",
     "fmt": "oxfmt",
+    "fmt:check": "oxfmt --check",
+    "typecheck": "tsc --noEmit",
+    "test": "jest",
+    "check": "pnpm run typecheck && pnpm run lint && pnpm run fmt:check && pnpm test",
     "build": "tsc",
     "build:cli": "node esbuild.config.js",
     "dev": "tsc --watch",
-    "test": "jest",
     "prepublishOnly": "npm run build && npm run build:cli"
   },
   "dependencies": {
@@ -51,6 +51,9 @@
     "oxlint-tsgolint": "^7.0.2001",
     "ts-jest": "^29.4.6",
     "typescript": "^6.0.2"
+  },
+  "engines": {
+    "node": ">=22.13.0"
   },
   "packageManager": "pnpm@10.33.0",
   "pnpm": {
